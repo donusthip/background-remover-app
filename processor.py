@@ -32,8 +32,14 @@ class BackgroundRemover:
         if self._session is None:
             if not self.model_path.exists():
                 raise FileNotFoundError(f"BEN2 model not found: {self.model_path}")
+            so = ort.SessionOptions()
+            so.enable_mem_pattern = False
+            so.execution_mode = ort.ExecutionMode.ORT_SEQUENTIAL
+            so.intra_op_num_threads = 1
+            so.inter_op_num_threads = 1
+            so.graph_optimization_level = ort.GraphOptimizationLevel.ORT_ENABLE_BASIC
             self._session = ort.InferenceSession(
-                str(self.model_path), providers=["CPUExecutionProvider"]
+                str(self.model_path), sess_options=so, providers=["CPUExecutionProvider"]
             )
         return self._session
 
@@ -48,6 +54,7 @@ class BackgroundRemover:
         return prediction * prediction * (3.0 - 2.0 * prediction)
 
     def _infer(self, image: Image.Image) -> np.ndarray:
+        import gc
         session = self._get_session()
         resized = image.resize((1024, 1024), Image.Resampling.BILINEAR)
         tensor = np.asarray(resized, dtype=np.float32) / 255.0
@@ -55,14 +62,20 @@ class BackgroundRemover:
         prediction = session.run(
             None, {session.get_inputs()[0].name: tensor}
         )[0]
+        del tensor
+        del resized
+        gc.collect()
         matte = self._normalize_prediction(prediction)
         matte_image = Image.fromarray(
             np.round(matte * 255.0).astype(np.uint8), "L"
         )
-        return np.asarray(
+        res = np.asarray(
             matte_image.resize(image.size, Image.Resampling.LANCZOS),
             dtype=np.float32,
         )
+        del matte_image
+        gc.collect()
+        return res
 
     @staticmethod
     def _valid_components(mask: np.ndarray) -> tuple[np.ndarray, list[int]]:

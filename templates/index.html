@@ -1,0 +1,266 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ลบพื้นหลังคุณภาพสูง</title>
+  <link rel="icon" type="image/png" href="/static/app-icon.png?v=20260807-1">
+  <link rel="stylesheet" href="/static/style.css?v=20260807-20">
+</head>
+<body data-local-mode="{{ 'true' if local_mode else 'false' }}">
+  <div class="shell">
+    <header class="topbar">
+      <div class="brand">
+        <div class="brand-mark">BG</div>
+        <div>
+          <h1>ลบพื้นหลังคุณภาพสูง</h1>
+          {% if local_mode %}
+          <p>ทำงานในเครื่องของคุณ ภาพไม่ถูกส่งออกไปภายนอก</p>
+          {% else %}
+          <p>ส่งงานเข้าคอมบ้านผ่านลิงก์เว็บ และติดตามลำดับคิวได้ทันที</p>
+          {% endif %}
+        </div>
+      </div>
+      <div class="top-actions">
+        <span class="status-dot"><i></i> พร้อมใช้งาน</span>
+        {% if local_mode %}
+        <button id="shareButton" class="ghost-button share-button">สร้างลิงก์แชร์</button>
+        <button id="openFolder" class="ghost-button">เปิดโฟลเดอร์ผลงาน</button>
+        <button id="shutdown" class="ghost-button danger">ปิดแอป</button>
+        {% endif %}
+      </div>
+    </header>
+
+    <main>
+      <section class="hero">
+        <div class="hero-copy">
+          <span class="eyebrow">BEN2 · HIGH DETAIL</span>
+          <h2>วางรูป แล้วรอรับไฟล์ PNG<br>พื้นหลังโปร่งใสได้เลย</h2>
+          <p>ระบบเก็บผม มือ นิ้ว เล็บ และขอบเสื้อผ้าแบบแบ่งภาพความละเอียดสูง พร้อมลบเศษมาสก์ลอยอัตโนมัติ</p>
+        </div>
+        <div class="quality-card">
+          <div class="quality-icon">✓</div>
+          <div>
+            <strong>โหมดคุณภาพสูงเปิดอยู่</strong>
+            <span>ใช้เวลาประมาณ 30–120 วินาทีต่อภาพ ขึ้นอยู่กับขนาดและจำนวนคน</span>
+          </div>
+        </div>
+      </section>
+
+      {% if local_mode %}
+      <section id="sharePanel" class="share-panel hidden">
+        <div>
+          <span class="eyebrow">ลิงก์สำหรับคอมบริษัทหรือเพื่อน</span>
+          <h3 id="shareState">กำลังสร้างลิงก์ที่ปลอดภัย…</h3>
+          <p>ส่งลิงก์ให้คนอื่นเปิดและอัปโหลดได้ทันที โดยระบบจะแจ้งลำดับคิวของแต่ละงาน</p>
+        </div>
+        <div class="share-credentials">
+          <label>ลิงก์เว็บ<input id="shareUrl" readonly value="กำลังเตรียม…"></label>
+          <button id="copyShare" class="primary-button compact" disabled>คัดลอกลิงก์</button>
+          <button id="stopShare" class="ghost-button">หยุดแชร์</button>
+        </div>
+        <small>ลิงก์ทดลองอาจเปลี่ยนเมื่อหยุดแชร์หรือปิดแอป</small>
+      </section>
+      {% endif %}
+
+      <section class="client-panel" aria-labelledby="clientTitle">
+        <div class="client-identity">
+          <div>
+            <span class="eyebrow">หมายเลขผู้ใช้ที่กำลังออนไลน์</span>
+            <h3 id="clientTitle">กำลังลงทะเบียนเครื่อง…</h3>
+            <p>ตั้งชื่อเล่นเพื่อให้รู้ว่าเป็นคิวของใคร เมื่อปิดเว็บและไม่มีงานค้าง หมายเลขจะว่างให้ผู้ใช้คนถัดไป</p>
+          </div>
+          <div class="nickname-row">
+            <input id="nicknameInput" maxlength="30" placeholder="เช่น โดนัท หรือ ฝ่ายกราฟิก">
+            <button id="saveNickname" class="ghost-button" type="button">บันทึกชื่อเล่น</button>
+          </div>
+        </div>
+        <div class="shared-queue">
+          <div class="queue-live"><i></i><strong id="machineQueueState">กำลังตรวจคิวส่วนกลาง…</strong></div>
+          <span id="machineQueueCount">รอ 0 รูป</span>
+          <div id="machineQueueList" class="machine-queue-list"></div>
+        </div>
+      </section>
+
+      <section class="source-panel" aria-labelledby="sourceTitle">
+        <div class="delivery-heading">
+          <div>
+            <span class="eyebrow">รูปต้นฉบับมาจากไหน</span>
+            <h3 id="sourceTitle">เลือกแหล่งรูป</h3>
+            <p>อัปโหลดจากเครื่องที่เปิดเว็บ หรือวางลิงก์โฟลเดอร์ Google Drive ที่แชร์สิทธิ์ Editor ให้บัญชี Donut</p>
+          </div>
+        </div>
+        <div class="source-options">
+          <button id="sourceDevice" class="source-option selected" type="button">
+            <span class="source-icon">↑</span>
+            <span><strong>อัปโหลดรูปจากเครื่องนี้</strong><small>เลือกรูปจากคอมพิวเตอร์หรือโทรศัพท์ที่กำลังเปิดเว็บ</small></span>
+          </button>
+          <button id="sourceDriveLink" class="source-option" type="button">
+            <span class="source-icon">🔗</span>
+            <span><strong>นำเข้าจากลิงก์ Google Drive</strong><small>นำรูปทั้งหมดในโฟลเดอร์เข้าคิว แล้วส่ง PNG กลับไปที่เดิม</small></span>
+          </button>
+        </div>
+        <div id="driveLinkPanel" class="drive-link-panel hidden">
+          <label for="driveFolderUrl">ลิงก์โฟลเดอร์ Google Drive</label>
+          <div class="drive-link-row">
+            <input id="driveFolderUrl" type="url" placeholder="https://drive.google.com/drive/folders/...">
+            <button id="checkDriveFolder" class="ghost-button" type="button">ตรวจสอบโฟลเดอร์</button>
+          </div>
+          <p class="drive-link-help">ต้นฉบับจะไม่ถูกย้ายหรือลบ ระบบจะสร้างโฟลเดอร์ “ลบพื้นหลัง_วันที่_เวลา” ภายในลิงก์เดิม</p>
+          <div id="driveFolderResult" class="drive-folder-result hidden"></div>
+          <button id="importDriveFolder" class="primary-button hidden" type="button">เริ่มลบพื้นหลังทั้งหมด</button>
+        </div>
+      </section>
+
+      <section id="deliveryPanel" class="delivery-panel" aria-labelledby="deliveryTitle">
+        <div class="delivery-heading">
+          <div>
+            <span class="eyebrow">ส่งผลลัพธ์ไปที่ไหน</span>
+            <h3 id="deliveryTitle">เลือกปลายทางก่อนอัปโหลด</h3>
+            <p>เลือกได้มากกว่าหนึ่งที่ และมีปุ่มดาวน์โหลดให้เสมอเมื่อทำเสร็จ</p>
+          </div>
+          <span class="prototype-badge">ต้นแบบระบบรับงานระยะไกล</span>
+        </div>
+        <div class="delivery-options">
+          <div class="delivery-option active-option fixed-option">
+            <span class="option-check">↓</span>
+            <span><strong>ดาวน์โหลดกลับเครื่องนี้</strong><small>ดาวน์โหลดลงอุปกรณ์ที่กำลังเปิดเว็บ</small></span>
+          </div>
+          <label class="delivery-option active-option">
+            <input id="saveHome" type="checkbox" checked>
+            <span class="option-check">✓</span>
+            <span><strong>เก็บสำเนาที่คอมของ Donut</strong><small>บันทึกอัตโนมัติ แยกโฟลเดอร์ตามวันที่</small></span>
+          </label>
+          <label class="delivery-option unavailable">
+            <input id="sendDrive" type="checkbox" disabled>
+            <span class="option-check">✓</span>
+            <span><strong>ส่งเข้า Google Drive ของ Donut</strong><small id="driveStatusText">กำลังรอเชื่อมบัญชี Google</small></span>
+          </label>
+          <label class="delivery-option unavailable">
+            <input id="sendEmail" type="checkbox" disabled>
+            <span class="option-check">✓</span>
+            <span><strong>ส่งผลลัพธ์ทางอีเมล</strong><small>กรอกอีเมลผู้รับเมื่อเปิดใช้งาน</small></span>
+          </label>
+        </div>
+        <div id="emailField" class="email-field hidden">
+          <label for="recipientEmail">อีเมลผู้รับ</label>
+          <input id="recipientEmail" type="email" placeholder="name@example.com">
+        </div>
+        <p class="delivery-note">คอมของ Donut: Desktop › BG-Received › วันที่รับงาน · Drive ของ Donut: ลบBG › วันที่และเวลา</p>
+      </section>
+
+      <section id="dropzone" class="dropzone" tabindex="0" role="button" aria-label="เลือกไฟล์รูปภาพ">
+        <input id="fileInput" type="file" accept="image/*,.tif,.tiff" multiple hidden>
+        <div class="upload-symbol">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 16V4m0 0L7 9m5-5 5 5M5 14v4a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-4"/></svg>
+        </div>
+        <h3>ลากรูปมาวางตรงนี้</h3>
+        <p>หรือกดเพื่อเลือกหลายรูปพร้อมกัน</p>
+        <button class="primary-button" type="button">เลือกรูปภาพ</button>
+        <small>รองรับ JPG, PNG, WebP, BMP และ TIFF · สูงสุด 120 MB ต่อไฟล์</small>
+      </section>
+
+      <section id="workSection" class="work-section hidden">
+        <div class="section-heading">
+          <div>
+            <h3>กระดานงานร่วมกัน</h3>
+            <p id="summary">กำลังเตรียมไฟล์…</p>
+          </div>
+          <div class="section-actions">
+            <div class="preview-switch" aria-label="พื้นหลังตัวอย่าง">
+              <button data-bg="checker" class="active">ตาราง</button>
+              <button data-bg="white">ขาว</button>
+              <button data-bg="dark">ดำ</button>
+            </div>
+            <button id="selectAll" class="ghost-button compact">เลือกงานของฉันทั้งหมด</button>
+            <button id="cancelSelected" class="ghost-button compact danger" disabled>ยกเลิกงานที่เลือก</button>
+            <button id="deleteSelected" class="ghost-button compact danger" disabled>ลบงานที่เสร็จแล้วที่เลือก</button>
+            <button id="clearCompleted" class="ghost-button compact danger">ลบงานที่เสร็จแล้วทั้งหมด</button>
+            <button id="downloadAll" class="primary-button compact" disabled>ดาวน์โหลดที่เลือก (.zip)</button>
+          </div>
+        </div>
+        <div id="results" class="results-grid"></div>
+      </section>
+    </main>
+
+    <footer>
+      <span>ประมวลผลด้วย BEN2 ในเครื่อง</span>
+          <span>สีและรายละเอียดบุคคลมาจากไฟล์ต้นฉบับ</span>
+    </footer>
+  </div>
+
+  <template id="resultTemplate">
+    <article class="result-card">
+      <div class="preview checker">
+        <img alt="ตัวอย่างภาพพื้นหลังโปร่งใส">
+        <div class="processing-layer">
+          <div class="spinner"></div>
+          <strong>กำลังลบพื้นหลัง…</strong>
+          <span>วิเคราะห์ภาพและเก็บขอบละเอียด</span>
+        </div>
+      </div>
+      <div class="result-info">
+        <div class="file-title">
+          <label class="card-select">
+            <input class="card-checkbox" type="checkbox">
+            <span class="card-checkmark">✓</span>
+            <strong></strong>
+          </label>
+          <span class="badge working">กำลังทำงาน</span>
+        </div>
+        <div class="owner-label"></div>
+        <div class="result-meta">รอสักครู่ ระบบกำลังประมวลผลอัตโนมัติ</div>
+        <div class="delivery-status hidden"></div>
+        <div class="result-actions hidden">
+          <a class="primary-button compact download" download>ดาวน์โหลด PNG</a>
+        </div>
+        <div class="error-message hidden"></div>
+      </div>
+    </article>
+  </template>
+
+  <div id="imagePreviewModal" class="image-preview-modal hidden" role="dialog" aria-modal="true" aria-labelledby="imagePreviewTitle">
+    <div id="brushCursor" class="brush-cursor hidden" aria-hidden="true"></div>
+    <div class="image-preview-toolbar">
+      <strong id="imagePreviewTitle">ดูภาพขนาดใหญ่</strong>
+      <div class="image-preview-controls">
+        <button id="zoomOut" class="ghost-button compact" type="button" aria-label="ซูมออก">−</button>
+        <span id="zoomLevel">100%</span>
+        <button id="zoomIn" class="ghost-button compact" type="button" aria-label="ซูมเข้า">+</button>
+        <button id="zoomReset" class="ghost-button compact" type="button">พอดีจอ</button>
+        <button id="panLeft" class="ghost-button compact" type="button" aria-label="เลื่อนภาพไปทางซ้าย">←</button>
+        <button id="panUp" class="ghost-button compact" type="button" aria-label="เลื่อนภาพขึ้น">↑</button>
+        <button id="panDown" class="ghost-button compact" type="button" aria-label="เลื่อนภาพลง">↓</button>
+        <button id="panRight" class="ghost-button compact" type="button" aria-label="เลื่อนภาพไปทางขวา">→</button>
+        <button id="startErase" class="primary-button compact" type="button">ยางลบเก็บงาน</button>
+        <button id="closeImagePreview" class="ghost-button compact" type="button">ปิด</button>
+      </div>
+    </div>
+    <div id="eraseControls" class="erase-controls hidden">
+      <button id="brushEraseMode" class="ghost-button compact active" type="button">ยางลบแปรง</button>
+      <button id="smartEraseMode" class="ghost-button compact" type="button">คลิกลบพื้นที่อัจฉริยะ</button>
+      <button id="restoreEraseMode" class="ghost-button compact" type="button">แปรงคืนภาพเมื่อลบพลาด</button>
+      <label for="eraserSize">ขนาดยางลบ</label>
+      <input id="eraserSize" type="range" min="10" max="300" step="5" value="80">
+      <strong id="eraserSizeLabel">80 px</strong>
+      <label for="smartTolerance">ความไว</label>
+      <input id="smartTolerance" class="smart-tolerance" type="range" min="5" max="100" step="5" value="35">
+      <strong id="smartToleranceLabel">35</strong>
+      <button id="undoErase" class="ghost-button compact" type="button" disabled>ย้อนกลับ</button>
+      <button id="resetErase" class="ghost-button compact" type="button" disabled>เริ่มลบใหม่</button>
+      <button id="cancelErase" class="ghost-button compact" type="button">ออกจากยางลบ</button>
+      <button id="saveErase" class="primary-button compact" type="button" disabled>บันทึกภาพที่แก้แล้ว</button>
+    </div>
+    <div id="imagePreviewStage" class="image-preview-stage">
+      <div id="imagePreviewCanvas" class="image-preview-canvas">
+        <img id="imagePreviewLarge" alt="ภาพพรีวิวขนาดใหญ่">
+        <canvas id="manualEditCanvas" class="manual-edit-canvas hidden"></canvas>
+      </div>
+    </div>
+    <p id="imagePreviewHelp" class="image-preview-help">ซูมก่อนแล้วจับลากได้ทุกจุดบนภาพ · ใช้ปุ่มลูกศรช่วยเลื่อน · กด Esc เพื่อปิด</p>
+    <p id="editorShortcutHelp" class="editor-shortcut-help hidden">คีย์ลัด: Ctrl+Z ย้อนกลับ · บ/[ ลดแปรง · ล/] เพิ่มแปรง · Shift เพิ่ม–ลดเร็ว</p>
+  </div>
+
+  <script src="/static/app.js?v=20260814-mask-zoom-preload-2"></script>
+</body>
+</html>
